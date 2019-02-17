@@ -15,19 +15,20 @@
 #include "SpinConfig.hpp"
 
 namespace Metropolis {
-    
+    struct Result {
+        std::vector<double> magnetization;
+        std::vector<double> corelation;
+    };
+    static std::vector<Result> resultVec;
     static std::mutex mutex;
     static int flipConstant = 1000;
-    static std::vector<double> magnetization;
-    static std::vector<double> corelation;
     SpinConfig &minimize (SpinConfig &startConfig);
     void metropolisThread (SpinConfig spinConfig, int noOfOptimizations);
     double getRandom (double from, double to);
     SpinConfig& chooseConfig (SpinConfig &config1, SpinConfig &config2);
     SpinConfig& chooseConfig (SpinConfig &config1, int changedSpin);
     double average (std::vector<double> &values);
-    double getAverageMagnetization ();
-    double getAverageCorelation ();
+    std::vector<Result> &getResults();
 };
 
 #endif /* Metropolis_hpp */

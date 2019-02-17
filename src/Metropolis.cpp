@@ -47,13 +47,17 @@ SpinConfig& Metropolis::minimize (SpinConfig &startConfig){
     return startConfig;
 }
 void Metropolis::metropolisThread (SpinConfig spinConfig, int noOfOptimizations){
+    Result threadResult;
     for (int optim = 0; optim < noOfOptimizations; ++optim){
         SpinConfig optimized = minimize(spinConfig);
         mutex.lock();
-        magnetization.push_back(optimized.magentization());
-        corelation.push_back(optimized.corelation());
+        threadResult.magnetization.push_back(optimized.magentization());
+        threadResult.corelation.push_back(optimized.corelation());
         mutex.unlock();
     }
+    mutex.lock();
+    resultVec.push_back(threadResult);
+    mutex.unlock();
     
 }
 double Metropolis::average (std::vector<double> &values){
@@ -63,11 +67,7 @@ double Metropolis::average (std::vector<double> &values){
     }
     return (1.0 / values.size()) * sum;
 }
-double Metropolis::getAverageMagnetization (){
-    return average(magnetization);
+std::vector<Metropolis::Result> &Metropolis::getResults (){
+    return resultVec;
+}
     
-}
-double Metropolis::getAverageCorelation (){
-    return average(corelation);
-}
-
