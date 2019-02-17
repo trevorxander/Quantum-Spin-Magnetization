@@ -14,8 +14,16 @@
 
 
 int noOfSpins = 100;
-int noOfThreads = 50;
-int metropolisPerThread = 50;
+int noOfThreads = 8;
+int metropolisPerThread = 6;
+
+double average (std::vector<double> &values){
+    double sum = 0;
+    for (auto &num: values){
+        sum += num;
+    }
+    return (1.0 / values.size()) * sum;
+}
 
 int main(int argc, const char * argv[]) {
     std::vector<int> spins;
@@ -27,8 +35,18 @@ int main(int argc, const char * argv[]) {
         metropolisThreads.push_back(std::thread(Metropolis::metropolisThread, startingConfig, metropolisPerThread));
     }
     for (auto &thread: metropolisThreads) thread.join();
-    std::cout<< "Average magnetization: "<<Metropolis::getAverageMagnetization() << "\n"
-                << "Average pair corelation: " <<Metropolis::getAverageCorelation() << "\n";
+    auto results = Metropolis::getResults();
+    
+    std::vector<double> magThreadAvgs;
+    std::vector<double> corThreadAvgs;
+    for (auto &threadResult: results){
+        magThreadAvgs.push_back(average(threadResult.magnetization));
+        corThreadAvgs.push_back(average(threadResult.corelation));
+    }
+   
+    std::cout << "Average magnetization: " << average(magThreadAvgs) << "\n";
+    std::cout << "Average corelation: " << average(corThreadAvgs) << "\n";
+  
     
     return 0;
 }
