@@ -13,6 +13,7 @@ SpinConfig::SpinConfig(std::vector <int> &spinValues, double B, double C, double
     configurations = spinValues;
     this->B = B;
     this->C = C;
+    if (temp == 0) temp = __DBL_MIN__;
     temperature = temp;
 }
 SpinConfig::SpinConfig(const SpinConfig& spin){
@@ -41,10 +42,8 @@ double SpinConfig::magentization (){
     return (1.0 / SpinConfig::configurations.size()) * spinSum;
 }
 int &SpinConfig::operator [] (int index) {
-    int validIndex;
     if (index < 0) index--;
-    validIndex = index % SpinConfig::configurations.size();
-    return configurations[validIndex];
+    return configurations[index % SpinConfig::configurations.size()];
 }
 double SpinConfig::energy(){
     int spinSum = 0;
@@ -56,16 +55,17 @@ double SpinConfig::energy(){
     return -spinSum;
 }
 
+//Slow version
 double SpinConfig::energyDiff (SpinConfig &config1, SpinConfig config2){
     return config2.energy() - config1.energy();
 }
 
 double SpinConfig::energyDiff (SpinConfig &config, int changedSpinIndex){
-    int oldEnergy = config.energy();
+    double oldEnergy = config.energy();
     
-    int prevSpin = config[changedSpinIndex - 1];
-    int changedSpin = config[changedSpinIndex];
-    int nextSpin = config[changedSpinIndex + 1];
+    double prevSpin = config[changedSpinIndex - 1];
+    double changedSpin = config[changedSpinIndex];
+    double nextSpin = config[changedSpinIndex + 1];
 
     double newEnergy = -oldEnergy;
     newEnergy -= (config.B * prevSpin) + (config.C * prevSpin * changedSpin);
@@ -78,6 +78,6 @@ double SpinConfig::energyDiff (SpinConfig &config, int changedSpinIndex){
     
     return newEnergy - oldEnergy;
 }
-int SpinConfig::size () const{
+unsigned long SpinConfig::size () const{
     return configurations.size();
 }

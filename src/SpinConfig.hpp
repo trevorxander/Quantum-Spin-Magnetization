@@ -10,7 +10,9 @@
 #define Spin_hpp
 
 #include <vector>
-#include <numeric> 
+#include <numeric>
+#include <iostream>
+
 
 
 class SpinConfig {
@@ -22,7 +24,7 @@ public:
     double magentization ();
     double corelation (int corelationOrder = 1);
     double energy();
-    int size () const;
+    unsigned long size () const;
     static double energyDiff (SpinConfig &config1, SpinConfig config2);
     static double energyDiff (SpinConfig &config, int changedSpin);
     

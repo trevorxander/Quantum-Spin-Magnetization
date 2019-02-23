@@ -25,18 +25,23 @@ SpinConfig& Metropolis::chooseConfig (SpinConfig &config1, SpinConfig &config2){
         else return config1; //old config
     }
 }
+
+bool cmp(double a, double b) {return fabs(a - b) < 0.000001;}
+
 SpinConfig& Metropolis::chooseConfig (SpinConfig &config1, int changedSpin){
     double energyDiff = SpinConfig::energyDiff(config1, changedSpin);
     if (energyDiff < 0) config1[changedSpin] *= -1;
     else {
-        double p = exp(-energyDiff/config1.temperature);
-        if (Metropolis::getRandom(0, 1) < p) config1[changedSpin] *= -1;
+        double p;
+        p = exp(-energyDiff/config1.temperature);
+        double random = getRandom(0, 1);
+        if (random < p) config1[changedSpin] *= -1;
     }
     return config1;
 }
 
 SpinConfig& Metropolis::minimize (SpinConfig &startConfig, int flipConstant){
-    int noOfiterations = flipConstant * startConfig.size();
+    unsigned long noOfiterations = flipConstant * startConfig.size();
     
     for (int flips = 0; flips < noOfiterations; ++flips){
         int spinIndex = static_cast<int>(getRandom(0, startConfig.size()));
@@ -53,10 +58,9 @@ void Metropolis::metropolisThread (SpinConfig spinConfig, int noOfOptimizations,
     Result threadResult;
     for (int optim = 0; optim < noOfOptimizations; ++optim){
         SpinConfig optimized = minimize(spinConfig, flipConstant);
-        mutex.lock();
         threadResult.magnetization.push_back(optimized.magentization());
         threadResult.corelation.push_back(optimized.corelation());
-        mutex.unlock();
+        
     }
     mutex.lock();
     resultVec.push_back(threadResult);
@@ -70,7 +74,11 @@ double Metropolis::average (std::vector<double> &values){
     }
     return (1.0 / values.size()) * sum;
 }
-std::vector<Metropolis::Result> &Metropolis::getResults (){
+std::vector<Metropolis::Result> Metropolis::getResults (){
+    struct AfterReturn {
+        ~AfterReturn() {resultVec.clear();}
+    };
+    AfterReturn ret;
     return resultVec;
 }
     

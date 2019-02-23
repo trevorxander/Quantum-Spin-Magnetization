@@ -9,7 +9,7 @@
 #ifndef Metropolis_hpp
 #define Metropolis_hpp
 
-#include <stdio.h>
+#include <iostream>
 #include <random>
 #include <mutex>
 #include "SpinConfig.hpp"
@@ -27,7 +27,7 @@ namespace Metropolis {
     SpinConfig& chooseConfig (SpinConfig &config1, SpinConfig &config2);
     SpinConfig& chooseConfig (SpinConfig &config1, int changedSpin);
     double average (std::vector<double> &values);
-    std::vector<Result> &getResults();
+    std::vector<Result> getResults();
 };
 
 #endif /* Metropolis_hpp */
