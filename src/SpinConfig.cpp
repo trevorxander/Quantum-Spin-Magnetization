@@ -51,7 +51,7 @@ double SpinConfig::energy(){
     for (int spinIndex = 0; spinIndex < configurations.size(); ++spinIndex){
         int spin1 = (*this)[spinIndex];
         int spin2 = (*this)[spinIndex + 1];
-        spinSum += B * spin1 + (C * spin1 * spin2) ;
+        spinSum += (B * spin1) + (C * spin1 * spin2);
     }
     return -spinSum;
 }
@@ -60,13 +60,23 @@ double SpinConfig::energyDiff (SpinConfig &config1, SpinConfig config2){
     return config2.energy() - config1.energy();
 }
 
-double SpinConfig::energyDiff (SpinConfig &config, int changedSpin){
+double SpinConfig::energyDiff (SpinConfig &config, int changedSpinIndex){
     int oldEnergy = config.energy();
-    int spin1 = config[changedSpin];
-    int spin2 = config[changedSpin + 1];
-    double newEnergy = oldEnergy - (config.B * spin1 + (config.C * spin1 * spin2))
-                                 + (config.B * -spin1 + (config.C * -spin1 * -spin2));
-    return oldEnergy - newEnergy;
+    
+    int prevSpin = config[changedSpinIndex - 1];
+    int changedSpin = config[changedSpinIndex];
+    int nextSpin = config[changedSpinIndex + 1];
+
+    double newEnergy = -oldEnergy;
+    newEnergy -= (config.B * prevSpin) + (config.C * prevSpin * changedSpin);
+    newEnergy += (config.B * prevSpin) + (config.C * prevSpin * -changedSpin);
+    
+    newEnergy -= (config.B * changedSpin) + (config.C * changedSpin * nextSpin);
+    newEnergy += (config.B * -changedSpin) + (config.C * -changedSpin * nextSpin);
+    
+    newEnergy = -newEnergy;
+    
+    return newEnergy - oldEnergy;
 }
 int SpinConfig::size () const{
     return configurations.size();

@@ -16,7 +16,6 @@ double Metropolis::getRandom (double from, double to){
 
 SpinConfig& Metropolis::chooseConfig (SpinConfig &config1, SpinConfig &config2){
     double energyDiff = SpinConfig::energyDiff(config1, config2);
-
     if (energyDiff < 0){
         return config2;//change config
     }
@@ -36,20 +35,24 @@ SpinConfig& Metropolis::chooseConfig (SpinConfig &config1, int changedSpin){
     return config1;
 }
 
-SpinConfig& Metropolis::minimize (SpinConfig &startConfig){
+SpinConfig& Metropolis::minimize (SpinConfig &startConfig, int flipConstant){
     int noOfiterations = flipConstant * startConfig.size();
     
     for (int flips = 0; flips < noOfiterations; ++flips){
         int spinIndex = static_cast<int>(getRandom(0, startConfig.size()));
         startConfig = chooseConfig(startConfig, spinIndex);
         
+//        auto copyConfig (startConfig);
+//        copyConfig[spinIndex] *= -1;
+//        startConfig = chooseConfig(startConfig, copyConfig);
+        
     }
     return startConfig;
 }
-void Metropolis::metropolisThread (SpinConfig spinConfig, int noOfOptimizations){
+void Metropolis::metropolisThread (SpinConfig spinConfig, int noOfOptimizations, int flipConstant){
     Result threadResult;
     for (int optim = 0; optim < noOfOptimizations; ++optim){
-        SpinConfig optimized = minimize(spinConfig);
+        SpinConfig optimized = minimize(spinConfig, flipConstant);
         mutex.lock();
         threadResult.magnetization.push_back(optimized.magentization());
         threadResult.corelation.push_back(optimized.corelation());

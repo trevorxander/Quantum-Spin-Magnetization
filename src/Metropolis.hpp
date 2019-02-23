@@ -21,9 +21,8 @@ namespace Metropolis {
     };
     static std::vector<Result> resultVec;
     static std::mutex mutex;
-    static int flipConstant = 1000;
-    SpinConfig &minimize (SpinConfig &startConfig);
-    void metropolisThread (SpinConfig spinConfig, int noOfOptimizations);
+    SpinConfig &minimize (SpinConfig &startConfig, int flipConstant);
+    void metropolisThread (SpinConfig spinConfig, int noOfOptimizations, int flipConstant);
     double getRandom (double from, double to);
     SpinConfig& chooseConfig (SpinConfig &config1, SpinConfig &config2);
     SpinConfig& chooseConfig (SpinConfig &config1, int changedSpin);
