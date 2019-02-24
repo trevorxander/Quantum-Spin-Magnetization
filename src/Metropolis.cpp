@@ -16,11 +16,17 @@ double Metropolis::getRandom (double from, double to){
 
 SpinConfig& Metropolis::chooseConfig (SpinConfig &config1, SpinConfig &config2){
     double energyDiff = SpinConfig::energyDiff(config1, config2);
+    mutex.lock();
+    std:: cout << -energyDiff <<" e\n";
+    mutex.unlock();
     if (energyDiff < 0){
         return config2;//change config
     }
     else {
         double p = exp(-energyDiff/config1.temperature);
+        mutex.lock();
+//        std:: cout << -energyDiff << " " << p << " p\n";
+        mutex.unlock();
         if (Metropolis::getRandom(0, 1) < p) return config2;// change config
         else return config1; //old config
     }
@@ -44,9 +50,11 @@ SpinConfig& Metropolis::minimize (SpinConfig &startConfig, int flipConstant){
     unsigned long noOfiterations = flipConstant * startConfig.size();
     
     for (int flips = 0; flips < noOfiterations; ++flips){
-        int spinIndex = static_cast<int>(getRandom(0, startConfig.size()));
-        startConfig = chooseConfig(startConfig, spinIndex);
         
+        int spinIndex = static_cast<int>(getRandom(0, startConfig.size()));
+    
+        startConfig = chooseConfig(startConfig, spinIndex);
+
 //        auto copyConfig (startConfig);
 //        copyConfig[spinIndex] *= -1;
 //        startConfig = chooseConfig(startConfig, copyConfig);
@@ -59,7 +67,7 @@ void Metropolis::metropolisThread (SpinConfig spinConfig, int noOfOptimizations,
     for (int optim = 0; optim < noOfOptimizations; ++optim){
         SpinConfig optimized = minimize(spinConfig, flipConstant);
         threadResult.magnetization.push_back(optimized.magentization());
-        threadResult.corelation.push_back(optimized.corelation());
+        threadResult.corelation.push_back(optimized.corelation(1));
         
     }
     mutex.lock();
@@ -67,13 +75,7 @@ void Metropolis::metropolisThread (SpinConfig spinConfig, int noOfOptimizations,
     mutex.unlock();
     
 }
-double Metropolis::average (std::vector<double> &values){
-    double sum = 0;
-    for (auto &num: values){
-        sum += num;
-    }
-    return (1.0 / values.size()) * sum;
-}
+
 std::vector<Metropolis::Result> Metropolis::getResults (){
     struct AfterReturn {
         ~AfterReturn() {resultVec.clear();}
@@ -81,4 +83,24 @@ std::vector<Metropolis::Result> Metropolis::getResults (){
     AfterReturn ret;
     return resultVec;
 }
+using Pair = std::tuple<std::vector<double>,std::vector<double>>;
+Pair Metropolis::runMetropolis (int noOfSpins, int maxIterations, int threads, int flipConstant, double B, double C, double T) {
     
+    SpinConfig startingConfig(noOfSpins, B, C, T);
+    
+    std::vector<std::thread> metropolisThreads;
+    for (int threadCount = 0; threadCount < threads; ++threadCount){
+        metropolisThreads.push_back(std::thread(Metropolis::metropolisThread, startingConfig, maxIterations, flipConstant));
+    }
+    for (auto &thread: metropolisThreads) thread.join();
+    auto results  = Metropolis::getResults();
+    
+    std::vector<double> magThreadAvgs;
+    std::vector<double> corThreadAvgs;
+    corThreadAvgs.clear();
+    for (auto &threadResult: results){
+        magThreadAvgs.push_back(StatOperations::average(threadResult.magnetization));
+        corThreadAvgs.push_back(StatOperations::average(threadResult.corelation));
+    }
+    return std::make_tuple(magThreadAvgs, corThreadAvgs);
+}

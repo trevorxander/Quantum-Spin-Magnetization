@@ -12,13 +12,20 @@
 #include <iostream>
 #include <random>
 #include <mutex>
+#include <thread>
+
 #include "SpinConfig.hpp"
+#include "StatOperations.hpp"
 
 namespace Metropolis {
     struct Result {
         std::vector<double> magnetization;
         std::vector<double> corelation;
     };
+    
+    using Pair = std::tuple<std::vector<double>,std::vector<double>>;
+    Pair runMetropolis (int noOfSpins, int maxIterations, int threads, int flipConstant, double B, double C, double T);
+    
     static std::vector<Result> resultVec;
     static std::mutex mutex;
     SpinConfig &minimize (SpinConfig &startConfig, int flipConstant);
@@ -26,8 +33,10 @@ namespace Metropolis {
     double getRandom (double from, double to);
     SpinConfig& chooseConfig (SpinConfig &config1, SpinConfig &config2);
     SpinConfig& chooseConfig (SpinConfig &config1, int changedSpin);
-    double average (std::vector<double> &values);
+   
     std::vector<Result> getResults();
+
+
 };
 
 #endif /* Metropolis_hpp */

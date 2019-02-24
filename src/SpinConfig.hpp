@@ -12,7 +12,7 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
-
+#include <cmath>
 
 
 class SpinConfig {
@@ -20,6 +20,7 @@ public:
     std::vector<int> configurations;
     double C = 0, B = 0, temperature = 0;
     SpinConfig(std::vector <int> &spinValues, double B, double C, double temp);
+    SpinConfig(int noOfSpins, double B, double C, double temp);
     SpinConfig(const SpinConfig& spin);
     double magentization ();
     double corelation (int corelationOrder = 1);

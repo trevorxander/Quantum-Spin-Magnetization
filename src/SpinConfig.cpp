@@ -13,9 +13,19 @@ SpinConfig::SpinConfig(std::vector <int> &spinValues, double B, double C, double
     configurations = spinValues;
     this->B = B;
     this->C = C;
-    if (temp == 0) temp = __DBL_MIN__;
     temperature = temp;
 }
+
+SpinConfig::SpinConfig(int noOfSpins, double B, double C, double temp){
+    for (int spinCount = 0; spinCount < noOfSpins; ++spinCount){
+        if (C >= 0) configurations.push_back(1);
+        else configurations.push_back(pow(-1, spinCount));
+    }
+    this->B = B;
+    this->C = C;
+    temperature = temp;
+}
+
 SpinConfig::SpinConfig(const SpinConfig& spin){
     configurations = spin.configurations;
     this->B = spin.B;
