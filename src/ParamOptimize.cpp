@@ -31,11 +31,10 @@ int Optimizer::getOptimalFlipsC (int metrpolisPerThread, double maxError, std::o
         double corError = StatOperations::error(corThreadResult, getTheoretical());
         return fabs(corError);
     };
-    
+    debug << "flip_constant,error,product\n";
     while (true) {
         double corError = (*err) (flipConstant, metrpolisPerThread);
-        debug << "FlipConstant: " << flipConstant << "\n"
-        <<"error: " << corError <<" Product: " << fabs(corError) * sqrt(flipConstant) << "\n\n";
+        debug << flipConstant << "," << corError << "," << fabs(corError) * sqrt(flipConstant) << "\n";
         if (corError < maxError ) break;
         flipConstant *= 2;
     }
@@ -55,7 +54,7 @@ int Optimizer::getOptimalMetrPerThread (int flipConstant, double maxDeviation, s
         return stdDev;
     };
     
-    debug << "metropolisiter,stddeviation,product\n";
+    debug << "metropolis_iter,std_deviation,product\n";
     while (true) {
         double stdDev = (*var)(metropolisPerThread, flipConstant);
         debug << metropolisPerThread << "," << stdDev << "," << stdDev * sqrt(metropolisPerThread) << "\n";
